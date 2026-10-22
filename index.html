@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<meta name="theme-color" content="#f0f2f5"/>
+<meta name="color-scheme" content="light"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="Exam Prep"/>
+<title>Exam Prep · 5 Sets · 125 Questions</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<!-- water distortion filter used by the tap splash / long-press effect (moves pixels only, never recolours) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <filter id="waterFx" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+    <feTurbulence id="waterTurb" type="fractalNoise" baseFrequency="0.008 0.012" numOctaves="2" seed="3" result="n"/>
+    <feDisplacementMap id="waterDisp" in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+
+
+<!-- ══════════════════════════════════════════════════
+     HOME
+══════════════════════════════════════════════════ -->
+
+<!-- ══════════════ AUTH ══════════════ -->
+<div id="auth">
+  <div class="auth-card">
+    <div class="home-logo">🎓</div>
+    <h1 class="home-title" style="font-size:1.6rem">MK Exam Practice Sets</h1>
+    <p class="auth-sub">Sign in with your Gmail to save your attempts and history.</p>
+    <div class="auth-tabs">
+      <button type="button" id="tabLogin" class="active" onclick="switchAuth('login')">Log in</button>
+      <button type="button" id="tabSignup" onclick="switchAuth('signup')">Sign up</button>
+    </div>
+    <form id="authForm" onsubmit="return submitAuth(event)" novalidate autocomplete="off">
+      <label id="nameWrap" style="display:none">Full name
+        <input type="text" id="authName" maxlength="40" placeholder="Your name" autocomplete="name"/>
+      </label>
+      <label>Gmail
+        <input type="email" id="authEmail" name="exam-gmail" placeholder="mk@gmail.com" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')"/>
+      </label>
+      <label>Password
+        <span class="pw-wrap"><input type="password" id="authPass" name="exam-pass" placeholder="At least 6 characters" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')"/><button type="button" class="pw-toggle" onclick="togglePw('authPass',this)" aria-label="Show password">Show</button></span>
+      </label>
+      <label id="confirmWrap" style="display:none">Confirm password
+        <span class="pw-wrap"><input type="password" id="authPass2" name="exam-pass2" placeholder="Re-enter password" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')"/><button type="button" class="pw-toggle" onclick="togglePw('authPass2',this)" aria-label="Show password">Show</button></span>
+      </label>
+      <div class="auth-msg" id="authMsg"></div>
+      <button type="submit" class="auth-submit" id="authSubmit">Log in</button>
+    </form>
+    <p class="auth-note">🔒 Accounts and history are stored in this browser only (no server).</p>
+  </div>
+</div>
+
+
+<!-- ══════════════ MY PROFILE ══════════════ -->
+<div id="profile" style="display:none">
+  <div class="page-wrap">
+    <div class="page-head">
+      <button class="back-home" onclick="goHome()">← Home</button>
+      <div class="quiz-top-title">👤 My profile</div>
+    </div>
+
+    <div class="p-card p-top">
+      <div class="p-photo" id="pPhoto"></div>
+      <div class="p-meta">
+        <div class="p-name" id="pName"></div>
+        <div class="p-uid" id="pUid"></div>
+        <div class="p-mail" id="pMail"></div>
+        <div class="p-actions">
+          <button class="btn btn-msq-submit" onclick="document.getElementById('photoFile').click()">Set photo</button>
+          <button class="btn btn-clear" id="pRemove" onclick="removePhoto()">Remove photo</button>
+          <input type="file" id="photoFile" accept="image/*" hidden onchange="onPhotoPicked(this)"/>
+        </div>
+        <div class="p-msg" id="photoMsg"></div>
+      </div>
+    </div>
+
+    <div class="p-card">
+      <h3 class="p-h">Details</h3>
+      <div class="p-grid">
+        <label class="p-field">Name<input type="text" id="pfName" maxlength="40" placeholder="Your name"/></label>
+        <label class="p-field p-wide">Bio<textarea id="pfBio" maxlength="160" rows="2" placeholder="Short bio (max 160 characters)"></textarea></label>
+      </div>
+      <div class="p-grid" id="socialFields"></div>
+      <h3 class="p-h" style="margin-top:1.2rem">Other links</h3>
+      <div id="customRows"></div>
+      <button class="btn" id="addCustomBtn" onclick="addCustomLink()">+ Add link</button>
+      <div class="p-msg" id="profileMsg"></div>
+      <button class="auth-submit p-save" onclick="saveProfile()">Save profile</button>
+    </div>
+
+    <div class="p-card">
+      <h3 class="p-h">Change password</h3>
+      <div class="p-grid">
+        <label class="p-field">Current password<span class="pw-wrap"><input type="password" id="pwCur" autocomplete="current-password"/><button type="button" class="pw-toggle" onclick="togglePw('pwCur',this)" aria-label="Show password">Show</button></span></label>
+        <label class="p-field">New password<span class="pw-wrap"><input type="password" id="pwNew" autocomplete="new-password" placeholder="At least 6 characters"/><button type="button" class="pw-toggle" onclick="togglePw('pwNew',this)" aria-label="Show password">Show</button></span></label>
+        <label class="p-field">Confirm new password<span class="pw-wrap"><input type="password" id="pwNew2" autocomplete="new-password"/><button type="button" class="pw-toggle" onclick="togglePw('pwNew2',this)" aria-label="Show password">Show</button></span></label>
+      </div>
+      <div class="p-msg" id="pwMsg"></div>
+      <button class="auth-submit p-save" id="pwBtn" onclick="changePassword()">Change password</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ USER SEARCH ══════════════ -->
+<div id="search" style="display:none">
+  <div class="page-wrap">
+    <div class="page-head">
+      <button class="back-home" onclick="goHome()">← Home</button>
+      <div class="quiz-top-title">🔍 Find people</div>
+    </div>
+    <input type="search" id="searchInput" class="search-input" placeholder="Search by Gmail, name or UID (e.g. 10001624)" oninput="runSearch()" autocomplete="off"/>
+    <div id="searchResults" class="search-results"></div>
+  </div>
+</div>
+
+<!-- ══════════════ VIEW SOMEONE'S PROFILE ══════════════ -->
+<div id="viewprofile" style="display:none">
+  <div class="page-wrap">
+    <div class="page-head">
+      <button class="back-home" onclick="showSearch(true)">← Search</button>
+      <div class="quiz-top-title">Profile</div>
+    </div>
+    <div class="p-card p-top" id="vTop"></div>
+    <div class="p-card" id="vBody"></div>
+  </div>
+</div>
+
+<!-- ══════════════ CROP PHOTO ══════════════ -->
+<div id="cropModal" class="crop-modal" style="display:none" role="dialog" aria-modal="true" aria-label="Crop profile photo">
+  <div class="crop-card">
+    <div class="crop-title">Crop your photo</div>
+    <div class="crop-hint">Drag to move · use the slider or mouse wheel to zoom</div>
+    <div class="crop-stage" id="cropStage">
+      <img id="cropImg" alt="" draggable="false"/>
+      <div class="crop-mask"></div>
+    </div>
+    <input type="range" id="cropZoom" class="crop-zoom" min="1" max="4" step="0.01" value="1" aria-label="Zoom"/>
+    <div class="crop-actions">
+      <button type="button" class="btn" onclick="cancelCrop()">Cancel</button>
+      <button type="button" class="btn btn-msq-submit" onclick="applyCrop()">Set photo</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<!-- ══════════════ HISTORY ══════════════ -->
+<div id="history" style="display:none">
+  <div class="history-wrap">
+    <div class="history-head">
+      <button class="back-home" onclick="goHome()">← Home</button>
+      <div class="quiz-top-title">🀄 Attempt history</div>
+      <button class="btn btn-clear history-clear" onclick="clearHistory()">Clear history</button>
+    </div>
+    <div class="history-summary" id="historySummary"></div>
+    <div class="history-table-wrap">
+      <table class="history-table">
+        <thead><tr><th>#</th><th>Date</th><th>Set</th><th>Correct</th><th>Wrong</th><th>Skipped</th><th>Score</th></tr></thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="home" style="display:none">
+  <div class="user-bar"><span class="user-email" id="userEmail" onclick="showProfile()" title="My profile"></span><button onclick="showSearch()">🔍 Search</button><button onclick="showProfile()">🤠 Profile</button><button onclick="showHistory()">📜 History</button><button onclick="logout()">Logout</button></div>
+  <div class="home-logo">🎓</div>
+  <h1 class="home-title">MK Exam Practice Sets</h1>
+  <p class="home-sub">125 questions per set · MCQ · MSQ · NAT · Keyboard shortcuts supported<br>Progressive difficulty — Easy through Hard</p>
+
+  <div class="sets-grid" id="setsGrid">
+    <div class="set-card" data-set="1" onclick="startSet(1)">
+      <span class="s-icon">📗</span>
+      <div class="s-name">Set 1</div>
+      <div class="s-level">Python · Data · ML · GenAI</div>
+      <span class="s-badge badge-1">🟢 Easy</span>
+      <div class="s-score" id="hscore-1">Not attempted</div>
+    </div>
+    <div class="set-card" data-set="2" onclick="startSet(2)">
+      <span class="s-icon">📘</span>
+      <div class="s-name">Set 2</div>
+      <div class="s-level">Python · Data · ML · GenAI</div>
+      <span class="s-badge badge-2">🔵 Easy–Medium</span>
+      <div class="s-score" id="hscore-2">Not attempted</div>
+    </div>
+    <div class="set-card" data-set="3" onclick="startSet(3)">
+      <span class="s-icon">📒</span>
+      <div class="s-name">Set 3</div>
+      <div class="s-level">Python · Data · ML · GenAI</div>
+      <span class="s-badge badge-3">🟡 Medium</span>
+      <div class="s-score" id="hscore-3">Not attempted</div>
+    </div>
+    <div class="set-card" data-set="4" onclick="startSet(4)">
+      <span class="s-icon">📙</span>
+      <div class="s-name">Set 4</div>
+      <div class="s-level">Python · Data · ML · GenAI</div>
+      <span class="s-badge badge-4">🟠 Medium–Hard</span>
+      <div class="s-score" id="hscore-4">Not attempted</div>
+    </div>
+    <div class="set-card" data-set="5" onclick="startSet(5)">
+      <span class="s-icon">📕</span>
+      <div class="s-name">Set 5</div>
+      <div class="s-level">Python · Data · ML · GenAI</div>
+      <span class="s-badge badge-5">🔴 Hard</span>
+      <div class="s-score" id="hscore-5">Not attempted</div>
+    </div>
+  </div>
+
+  <div class="home-legend">
+    <span><span class="dot dot-mcq"></span>MCQ – Single correct</span>
+    <span><span class="dot dot-msq"></span>MSQ – Multiple correct</span>
+    <span><span class="dot dot-nat"></span>NAT – Numerical answer</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     QUIZ
+══════════════════════════════════════════════════ -->
+<div id="quiz">
+  <!-- Top bar -->
+  <div class="quiz-top-bar">
+    <button class="back-home" onclick="goHome()">← Home</button>
+    <div class="quiz-top-title" id="quizTopTitle">Set 1 · Easy</div>
+    <span class="live-score" id="liveScore">✅ 0</span>
+    <button class="submit-all-btn" onclick="submitAll()">Submit All</button>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="prog-wrap">
+    <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    <span class="prog-text" id="progText">0 / 125</span>
+  </div>
+
+  <!-- Stage tabs (sections) -->
+  <div style="max-width:1200px;margin:0 auto .85rem">
+    <div class="stage-tabs" id="stageTabs">
+      <button class="stage-tab active" onclick="jumpToSection(0)">Stage 1 · Python Foundations</button>
+      <button class="stage-tab" onclick="jumpToSection(1)">Stage 2 · Data, SQL & EDA</button>
+      <button class="stage-tab" onclick="jumpToSection(2)">Stage 3 · Regression & ML</button>
+      <button class="stage-tab" onclick="jumpToSection(3)">Stage 4 · GenAI & RAG</button>
+    </div>
+  </div>
+
+  <!-- Main split layout -->
+  <div class="quiz-wrap">
+    <!-- LEFT: Question -->
+    <div>
+      <div class="q-card" id="mainCard">
+        <!-- Header -->
+        <div class="q-card-header" id="cardHeader"></div>
+        <!-- Body -->
+        <div class="q-body">
+          <div class="q-text" id="qText"></div>
+          <div class="q-hint" id="qHint"></div>
+          <div class="options-list" id="optionsList"></div>
+          <div class="feedback-strip" id="feedbackStrip"></div>
+        </div>
+        <!-- Actions -->
+        <div class="action-bar" id="actionBar"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Sidebar -->
+    <div class="sidebar">
+      <!-- Navigator -->
+      <div class="sidebar-card">
+        <div class="sidebar-card-head" id="navTitle">Section A · 31 questions</div>
+        <div class="sidebar-card-body">
+          <div class="nav-grid" id="navGrid"></div>
+          <div class="nav-legend">
+            <span><span class="leg-dot leg-correct"></span>Correct</span>
+            <span><span class="leg-dot leg-wrong"></span>Wrong</span>
+            <span><span class="leg-dot leg-shown"></span>Answer shown</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Practice again -->
+      <div class="sidebar-card">
+        <div class="sidebar-card-head">Practice again</div>
+        <div class="sidebar-card-body" style="padding-bottom:.6rem">
+          <button class="practice-btn" onclick="resetSection()">Reset this section</button>
+          <button class="practice-btn" onclick="retrySet()">Reset this stage</button>
+        </div>
+        <div class="shortcut-hint">
+          <kbd>A</kbd>–<kbd>D/E</kbd> pick option &nbsp;·&nbsp;
+          <kbd>←</kbd><kbd>→</kbd> move &nbsp;·&nbsp;
+          <kbd>Enter</kbd> check &nbsp;·&nbsp;
+          <kbd>S</kbd> show answer
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     RESULTS
+══════════════════════════════════════════════════ -->
+<div id="results" style="display:none;min-height:100vh;background:#f0f2f5;align-items:center;justify-content:center;padding:2rem">
+  <div class="results-wrap">
+    <div class="results-main">
+      <div class="res-emoji" id="resEmoji">🎉</div>
+      <div class="res-score-big" id="resBig">0</div>
+      <div class="res-label">out of 125 questions</div>
+      <div class="res-stats">
+        <div class="res-stat"><span class="rv rv-correct" id="rCorrect">0</span><div class="rl">✅ Correct</div></div>
+        <div class="res-stat"><span class="rv rv-wrong" id="rWrong">0</span><div class="rl">❌ Wrong</div></div>
+        <div class="res-stat"><span class="rv rv-skip" id="rSkip">0</span><div class="rl">⏭ Skipped</div></div>
+        <div class="res-stat"><span class="rv rv-pct" id="rPct">0%</span><div class="rl">📊 Score</div></div>
+      </div>
+      <div class="res-msg" id="resMsg"></div>
+      <div class="res-btns">
+        <button class="rb-home" onclick="goHome()">🏠 Home</button>
+        <button class="rb-retry" onclick="retrySet()">🔄 Try Again</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
